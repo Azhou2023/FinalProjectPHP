@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>AJAX Messaging Project UI 2018</title>
+
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0px;
+			padding: 0px;
+		}
+		#controlPanel {
+			background-color: #c8c8c8;
+			height: 100%;
+			float: left;
+		}
+
+		#reportArea {
+			background-color: #97d7d7;
+			height: 100%;
+			overflow-x: auto;
+			overflow-y: auto;
+			/* width: 100%; */
+
+		}
+		.panelTitle {
+			padding: 0;
+			margin: 0;
+			color: #1e3917;
+			text-align: center;
+		}
+
+		/*	NOTE: This, combined with the mods to the input[type=text] CSS, make the
+			fields of the form all line up on the right border (0px from the right)
+		*/
+		#checkMessagesToPanel, #checkMessagesFromPanel, #newUserPanel, #newMessagePanel {
+			border: 1px solid black;
+			position: relative;
+		}
+
+		/*	This, with the relative positioning of the panels (see above) is
+			one way to get the inputs to line up all nicely and flush against
+			the right hand side of the panels.
+			Position absolute positions elements relative to their nearest
+			positioned ancestor so this is putting items 0px from the right
+			hand side of the panel divs...lines them up nicely.
+		*/
+		input[type=text] {
+			width: 150px;
+			position: absolute;
+			right: 0px;
+		}
+		input[type=password] {
+			width: 150px;
+			position: absolute;
+			right: 0px;
+		}
+	</style>
+
+</head>
+
+
+<body>
+
+	<div id="controlPanel">
+
+		<div id="checkMessagesToPanel">
+			<p class="panelTitle">Messages To Panel</p>
+			<form action="javascript:checkMessagesTo();" method="get">
+				To: <input type="text" name="recipientUsername" placeholder="username" id="recipientID"></input><br>
+				<input type="submit"></input>
+			</form>
+		</div>
+
+		<div id="checkMessagesFromPanel">
+			<p class="panelTitle">Messages From Panel</p>
+			<form action="javascript:checkMessagesFrom();" method="get">
+				From: <input type="text" name="senderUsername" placeholder="username" id="senderID"></input><br>
+				<input type="submit"></input>
+			</form>
+		</div>
+
+		<div id="newMessagePanel">
+			<p class="panelTitle">New Message Panel</p>
+			<form action="javascript:createNewMessage();" method="get">
+				From: <input type="text" name="fromUsername" placeholder="username" id="fromID"></input><br>
+				To: <input type="text" name="toUsername" placeholder="user1, user2, user3, ..." id="toID"></input><br>
+				Body:<br>
+				<textarea rows=6 cols=30 name="body" placeholder="Enter message here" id="bodyID"></textarea><br>
+				<input type="submit"></input>
+			</form>
+		</div>
+
+		<div id="newUserPanel">
+			<p class="panelTitle">New User Panel</p>
+			<form action="javascript:createNewUser();" method="get">
+				Username: <input type="text" name="username" placeholder="username" id="usernameID"></input><br>
+				Password: <input type="password" name="password" placeholder="password" id="passwordID"></input><br>
+				Show Password: <input type="checkbox" onclick="toggleVisibility()"></input><br>
+				Email: <input type="text" name="email" placeholder="email" id="emailID"></input><br>
+				<input type="submit"></input>
+			</form>
+		</div>
+
+		<div id="newUserPanel">
+			<p class="panelTitle">Update User Info</p>
+			<form action="javascript:modifyInfo();" method="get">
+				Username: <input type="text" name="username" placeholder="User to Update" id="modifyUsernameID"></input><br>
+				Update: <input type="radio" onclick="togglePlaceholder()" name="select" id="usernameRadio">Username 
+						<input type="radio" onclick="togglePlaceholder()" name="select" id="passwordRadio">Password <br>
+			 	<input type="text" name="updateField" placeholder="Update Username" id="updateID"></input><br>
+				<input type="submit"></input>
+			</form>
+		</div>
+
+	</div>
+
+	<div id="reportArea">
+
+		<br>
+		This div is where the content from your AJAX requests will show up.
+	</div>
+
+
+	<script>
+
+	
+	document.getElementById("usernameRadio").checked = true;
+
+	setInterval(periodic, 33);
+	function periodic(){
+		if(document.getElementById("usernameRadio").checked){
+				document.getElementById("updateID").placeholder = "Update Username";
+		}
+		if(document.getElementById("passwordRadio").checked){
+			document.getElementById("updateID").placeholder = "Update Password";
+	}
+	}
+
+    function sendAjax(url){
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState==4 && xhr.status==200){
+              let display = document.getElementById('reportArea');
+              display.innerHTML = xhr.responseText;
+            }
+          }
+          xhr.open("GET", url, true);
+          xhr.send(null);
+      }
+
+    function checkMessagesTo(){
+			url = "checkMessagesTo.php?recipientUsername="+document.getElementById("recipientID").value;
+			sendAjax(url);
+			document.getElementById("recipientID").value = "";
+    }
+
+    function checkMessagesFrom(){
+			url = "checkMessagesFrom.php?senderUsername="+document.getElementById("senderID").value;
+			sendAjax(url);
+			document.getElementById("senderID").value = "";
+
+    }
+
+    function createNewMessage(){
+			url = "AddMessage.php?fromUsername="+document.getElementById("fromID").value
+				+"&toUsername="+document.getElementById("toID").value
+				+"&body="+document.getElementById("bodyID").value;
+			sendAjax(url);
+			document.getElementById("fromID").value = "";
+			document.getElementById("toID").value = "";
+			document.getElementById("bodyID").value = "";
+
+    }
+
+    function createNewUser(){
+			url = "AddUser.php?username="+document.getElementById("usernameID").value
+				+"&password="+document.getElementById("passwordID").value
+				+"&email="+document.getElementById("emailID").value;
+			sendAjax(url);
+			document.getElementById("usernameID").value = "";
+			document.getElementById("passwordID").value = "";
+			document.getElementById("emailID").value = "";
+    }
+
+	function modifyInfo(){
+			url = "updateInfo.php?username="+document.getElementById("modifyUsernameID").value
+				+"&select="+document.getElementById("usernameRadio").checked
+				+"&updateField="+document.getElementById("updateID").value;
+			sendAjax(url);
+			document.getElementById("modifyUsernameID").value = "";
+			document.getElementById("updateID").value = "";
+	}
+	
+
+	function toggleVisibility(){
+		let password = document.getElementById("passwordID");
+		if(password.type==="password"){
+			password.type="text";
+		}else{
+			password.type="password";
+		}
+	}
+
+	</script>
+
+</body>
+</html>
